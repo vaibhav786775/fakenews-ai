@@ -3,28 +3,28 @@ from transformers import pipeline
 
 app = Flask(__name__)
 
-# load model
+# Load model
 classifier = pipeline(
     "text-classification",
-    model="jy46604790/Fake-News-Bert-Detect"
+    model="mrm8488/bert-tiny-finetuned-fake-news-detection"
 )
 
-# correct label mapping for this model
+# Label mapping for this model
 label_map = {
-    "LABEL_0": "FAKE",
-    "LABEL_1": "REAL"
+    "LABEL_0": "REAL",
+    "LABEL_1": "FAKE"
 }
 
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
         data = request.get_json(force=True)
-        text = data.get("text", "")
+        text = data.get("text", "").strip()
 
         if not text:
             return jsonify({"error": "Text is required"}), 400
 
-        # keep input safe (truncate long text)
+        # Truncate long input for safety
         text = text[:1000]
 
         result = classifier(text)[0]
@@ -37,7 +37,6 @@ def predict():
     except Exception as e:
         print("PYTHON ERROR:", e)
         return jsonify({"error": "Internal Server Error"}), 500
-
 
 if __name__ == "__main__":
     import os
